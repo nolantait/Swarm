@@ -1,10 +1,8 @@
-import CreateBorders from '../borders';
-import { InitializeOccupiedTiles } from '../tile_manager';
-import { InitializeSwarm } from '../swarm_manager';
-
 Crafty.scene('main', () => {
   Crafty.background('#eee');
-  CreateBorders();
-  InitializeOccupiedTiles();
-  InitializeSwarm();
+  const team = Crafty.e('Team');
+  const swarm = Crafty.e('Ant, TeamAssignment')
+    .at(5,4)
+    .assign(team)
+    .color(team.color);
 });

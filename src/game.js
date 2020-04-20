@@ -1,7 +1,7 @@
 const Game = {
   map: {
-    width: 24,
-    height: 24,
+    width: 100,
+    height: 50,
   },
   tile: {
     width: 16,
