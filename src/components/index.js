@@ -1,4 +1,5 @@
 import Game from '../game';
+import './ant';
 
 // Allows an element to be located on the grid
 Crafty.c('Grid', {
@@ -23,22 +24,11 @@ Crafty.c('Actor', {
   required: '2D, Canvas, Grid, Color',
 });
 
-Crafty.c('Ant', {
-  _speed: 0.5,
-  required: 'Actor',
-  events: {
-    'UpdateFrame': function() {
-      this.x += Math.random() < 0.5 ? -this._speed : this._speed;
-      this.y += Math.random() < 0.5 ? -this._speed : this._speed;
-    },
-  },
-});
-
 Crafty.c('Team', {
   required: 'Color',
 
   init() {
-    this.color = '#'+(Math.random()*0xFFFFFF<<0).toString(16);
+    this.color = `#${(Math.random() * 0xFFFFFF<<0).toString(16)}`;
   },
 });
 
