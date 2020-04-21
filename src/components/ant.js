@@ -56,8 +56,12 @@ Crafty.c('Ant', {
         [1, -1],
       ];
 
-      const probabilities = matrix.map(function(transform) {
-        const result = Crafty('Smell').toArray().find((smell) => smell.x === (this.x + transform[0]) && smell.y === (this.y + transform[1]));
+      const probabilities = matrix.map((transform) => {
+        const result = Crafty('Smell')
+          .toArray()
+          .find((smell) => smell.x === (this.x + transform[0])
+          && smell.y === (this.y + transform[1]));
+
         if (result === undefined) {
           return Math.random();
         }
@@ -65,8 +69,12 @@ Crafty.c('Ant', {
         return result.strength;
       });
 
-
-      Crafty.e('Smell').at(this.x, this.y).setStrength(Math.random());
+      Crafty.e('Smell').attr({
+        x: this.x,
+        y: this.y,
+        h: 2,
+        w: 2,
+      }).color(this.color(), 0.025).assign(Crafty('Team').get(this.team)[0]);
 
       let maxIndex = 0;
       let currentMax = 0;
@@ -75,8 +83,13 @@ Crafty.c('Ant', {
         if (probabilities[i] >= currentMax) {
           maxIndex = i;
           currentMax = probabilities[i];
-        };
-      };
+        }
+      }
+
+      const transform = matrix[maxIndex];
+
+      this.x += transform[0];
+      this.y += transform[1];
     },
   },
 });
