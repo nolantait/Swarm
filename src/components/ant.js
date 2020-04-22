@@ -1,30 +1,55 @@
-Crafty.c('Ant', {
-  _speed: 0.5,
-  required: 'Actor',
-  standingOnFood() {
-    const result = Crafty('Food')
-      .toArray()
-      .find((food) => food.x === this.x && food.y === this.y);
+import Game from '../game';
 
-    if (result === undefined) {
+Crafty.c('Ant', {
+  _speed: 1,
+  required: 'Actor',
+  init() {
+    this.origin('center');
+    this.attr({
+      z: 2,
+    });
+    this._direction = new Crafty.math.Vector2D();
+    this.smellRange = 32;
+    this.goal = 'Food';
+    this.directions = [
+      'n',
+      'ne',
+      'nw',
+      'w',
+      'e',
+      'se',
+      'sw',
+      's',
+    ];
+  },
+
+  standingOnFood() {
+    const area = this.pos();
+    const results = [];
+    Crafty.map.search(area, results);
+    const filteredResults = results.filter((entity) => entity.has('Food'));
+
+    if (filteredResults.length === 0) {
       return false;
     }
 
-    return result;
+    console.log('STANDING ON FOOD');
+    return true;
   },
   standingOnHive() {
-    const result = Crafty('Hive')
-      .toArray()
-      .find((hive) => hive.x === this.x && hive.y === this.y);
+    const area = this.pos();
+    const results = [];
+    Crafty.map.search(area, results);
+    const filteredResults = results.filter((entity) => entity.has('Hive'));
 
-    if (result === undefined) {
+    if (filteredResults.length === 0) {
       return false;
     }
-
-    return result;
+    console.log('STANDING ON HIVE');
+    return true;
   },
   hasFood() {
-    return (this.food !== undefined);
+    return (this.food > 0);
   },
   pickUp() {
     this.food += 1;
@@ -34,62 +59,65 @@ Crafty.c('Ant', {
   },
   events: {
     UpdateFrame() {
-      if (this.standingOnFood() !== undefined) {
+      if (this.standingOnFood()) {
         if (!this.hasFood()) {
           this.pickUp();
+          this.goal = 'Hive';
         }
-      } else if (this.standingOnHive()) {
+      }
+
+      if (this.standingOnHive()) {
         if (this.hasFood()) {
           this.dropOff();
+          this.goal = 'Food';
         }
       }
 
-      const matrix = [
-        [-1, 1],
-        [0, 1],
-        [1, 1],
-        [-1, 0],
-        [0, 0],
-        [1, 0],
-        [-1, -1],
-        [0, -1],
-        [1, -1],
-      ];
+      const perceptionSpace = {
+        _x: this.x - this.smellRange,
+        _y: this.y - this.smellRange,
+        _h: this.smellRange * 2,
+        _w: this.smellRange * 2,
+      };
 
-      const probabilities = matrix.map((transform) => {
-        const result = Crafty('Smell')
-          .toArray()
-          .find((smell) => smell.x === (this.x + transform[0])
-          && smell.y === (this.y + transform[1]));
+      const results = [];
+      Crafty.map.search(perceptionSpace, results);
+      const filteredGoalResults = results.filter((entity) => entity.has(this.goal));
+      const filteredSmellResults = results.filter((entity) => entity.has('Smell'));
 
-        if (result === undefined) {
-          return Math.random();
-        }
+      if (filteredGoalResults.length > 0) {
+        const dir = this._direction;
+        dir.setValues(
+          filteredGoalResults[0].x - this.x,
+          filteredGoalResults[0].y - this.y,
+        );
+        dir.scaleToMagnitude(this._speed);
+        this.x += dir.x;
+        this.y += dir.y;
+      } else if (filteredSmellResults.length > 0 && this.goal === 'Hive') {
+        const sortedResults = filteredSmellResults.sort((a, b) => b.strength - a.strength);
 
-        return result.strength;
-      });
-
-      Crafty.e('Smell').attr({
-        x: this.x,
-        y: this.y,
-        h: 2,
-        w: 2,
-      }).color(this.color(), 0.025).assign(Crafty('Team').get(this.team)[0]);
-
-      let maxIndex = 0;
-      let currentMax = 0;
-
-      for (let i = 0; i < probabilities.length; i += 1) {
-        if (probabilities[i] >= currentMax) {
-          maxIndex = i;
-          currentMax = probabilities[i];
-        }
+        const dir = this._direction;
+        dir.setValues(
+          sortedResults[0].x - this.x,
+          sortedResults[0].y - this.y,
+        );
+        dir.scaleToMagnitude(this._speed);
+        this.x += dir.x;
+        this.y += dir.y;
+      } else {
+        this.move(
+          Crafty.math.randomElementOfArray(this.directions),
+          this._speed,
+        );
+        Crafty.e('Smell').attr({
+          h: 1,
+          w: 1,
+        })
+          .at(this.x / Game.tile.width, this.y / Game.tile.height)
+          .color(this.color(), 1)
+          .assign(Crafty('Team').get(this.team)[0]);
       }
-
-      const transform = matrix[maxIndex];
-
-      this.x += transform[0];
-      this.y += transform[1];
     },
   },
 });

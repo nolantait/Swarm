@@ -5,3 +5,4 @@ import './team_assignment';
 import './ant';
 import './hive';
 import './smell';
+import './food';
