@@ -1,6 +1,7 @@
 // Import our modules.
 import './components';
 import './scenes';
+import './systems/pathfinding';
 import Game from './game';
 
 // Initialise our application.
