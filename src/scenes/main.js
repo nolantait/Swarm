@@ -1,6 +1,8 @@
 Crafty.scene('main', () => {
   Crafty.background('#eee');
-  Crafty.s('Pathfinding');
+  Crafty.s('Depositing');
+  Crafty.s('Gathering');
+  Crafty.s('Smell');
 
   const team = Crafty.e('Team');
   Crafty.e('Hive, TeamAssignment')
@@ -9,18 +11,34 @@ Crafty.scene('main', () => {
     .assign(team)
     .color(team.color);
 
-  Crafty.e('Ant, TeamAssignment')
+  Crafty.e('Ant, TeamAssignment, Gathering')
+    .attr({ w: 5, h: 5 })
+    .at(20, 20)
+    .assign(team)
+    .color(team.color);
+  Crafty.e('Ant, TeamAssignment, Gathering')
+    .attr({ w: 5, h: 5 })
+    .at(20, 20)
+    .assign(team)
+    .color(team.color);
+  Crafty.e('Ant, TeamAssignment, Gathering')
+    .attr({ w: 5, h: 5 })
+    .at(20, 20)
+    .assign(team)
+    .color(team.color);
+  Crafty.e('Ant, TeamAssignment, Gathering')
     .attr({ w: 5, h: 5 })
     .at(20, 20)
     .assign(team)
     .color(team.color);
 
+
   Crafty.e('Food')
-    .at(17, 17)
+    .at(25, 17)
     .color('red');
 
   Crafty.e('Food')
-    .at(23, 23)
+    .at(30, 23)
     .color('red');
 
 

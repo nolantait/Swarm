@@ -14,4 +14,8 @@ export function orientTo(initial, target, maxSpeed) {
   velocity.y = Crafty.math.clamp((velocity.y + subVector.y), -maxSpeed, maxSpeed);
 }
 
+export function probability(n) {
+  return Math.random() < n;
+}
+
 export default orientTo;

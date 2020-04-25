@@ -1,3 +1,4 @@
+import StateMachine from 'javascript-state-machine';
 import Game from '../game';
 
 Crafty.c('Ant', {
@@ -5,24 +6,46 @@ Crafty.c('Ant', {
   required: 'Actor, Motion',
   init() {
     this.origin('center');
-    this.attr({
-      z: 2,
+    this.smellRange = 48;
+    this.food = 0;
+    this.lastSmell = this.pos();
+    this.smellTimer = 0;
+    this.currentHive = undefined;
+    const self = this;
+    this.state = new StateMachine({
+      init: 'gathering',
+      transitions: [
+        { name: 'deposit', from: 'gathering', to: 'depositing' },
+        { name: 'gather', from: 'depositing', to: 'gathering' },
+      ],
+      methods: {
+        onDeposit() {
+          self.removeComponent('Gathering');
+          self.addComponent('Depositing');
+        },
+        onGather() {
+          self.removeComponent('Depositing');
+          self.addComponent('Gathering');
+        },
+      },
     });
-    this.smellRange = 32;
-    this.goal = 'Food';
-    this.directions = [
-      'n',
-      'ne',
-      'nw',
-      'w',
-      'e',
-      'se',
-      'sw',
-      's',
-    ];
-    this.attr({
-      rotation: 30,
-    })
+  },
+
+  perceptionSpace() {
+    return {
+      _x: this.x - this.smellRange,
+      _y: this.y - this.smellRange,
+      _h: this.smellRange * 2,
+      _w: this.smellRange * 2,
+    };
+  },
+
+  smellType() {
+    if (this.state.is('depositing')) {
+      return 'FoodSmell';
+    }
+
+    return 'HiveSmell';
   },
 
   standingOnFood() {
@@ -46,30 +69,33 @@ Crafty.c('Ant', {
     if (filteredResults.length === 0) {
       return false;
     }
+    this.currentHive = filteredResults[0];
     return true;
   },
   hasFood() {
     return (this.food > 0);
   },
-  pickUp() {
-    this.food += 1;
-  },
-  dropOff() {
-    this.food -= 1;
-  },
   events: {
     UpdateFrame() {
       if (this.standingOnFood()) {
         if (!this.hasFood()) {
-          this.pickUp();
-          this.goal = 'Hive';
+          if (this.state.is('gathering')) {
+            this.food += 1
+            this.state.deposit();
+            console.log('DEPOSITING');
+          }
         }
       }
 
       if (this.standingOnHive()) {
         if (this.hasFood()) {
-          this.dropOff();
-          this.goal = 'Food';
+          if (this.state.is('depositing')) {
+            this.food -= 1;
+            console.log(this.currentHive);
+            this.currentHive.food = this.currentHive.food + 1;
+            this.state.gather();
+            console.log('GATHERING');
+          }
         }
       }
     },

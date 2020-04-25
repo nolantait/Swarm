@@ -4,5 +4,6 @@ import './team';
 import './team_assignment';
 import './ant';
 import './hive';
-import './smell';
+import './hive_smell';
+import './food_smell';
 import './food';

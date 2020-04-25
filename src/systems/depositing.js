@@ -1,25 +1,26 @@
 import Game from '../game';
 import { orientTo } from '../utility';
 
-Crafty.s('Pathfinding', {
+Crafty.s('Depositing', {
   events: {
     UpdateFrame() {
-      Crafty('Ant').each(function(index) {
-        const perceptionSpace = {
-          _x: this.x - this.smellRange,
-          _y: this.y - this.smellRange,
-          _h: this.smellRange * 2,
-          _w: this.smellRange * 2,
-        };
-
+      Crafty('Depositing').each(function(index) {
         const results = [];
-        Crafty.map.search(perceptionSpace, results);
-        const filteredGoalResults = results.filter((entity) => entity.has(this.goal));
-        const filteredSmellResults = results.filter((entity) => entity.has('Smell'));
+        Crafty.map.search(this.perceptionSpace(), results);
+        const filteredGoalResults = results.filter((entity) => entity.has('Hive'));
+
+        const IgnoreRange = new Crafty.circle(this.x, this.y, 35);
+        const filteredSmellResults = results.filter((entity) => {
+          const excluded = IgnoreRange.containsPoint(entity.x, entity.y);
+          if (entity.has('HiveSmell') && !excluded) {
+            return true;
+          }
+          return false;
+        });
 
         if (filteredGoalResults.length > 0) {
           orientTo(this, filteredGoalResults[0], this._speed);
-        } else if (filteredSmellResults.length > 0 && this.goal === 'Hive') {
+        } else if (filteredSmellResults.length > 0) {
           const sortedResults = filteredSmellResults.sort((a, b) => b.strength - a.strength);
           orientTo(this, sortedResults[0], this._speed);
         } else {

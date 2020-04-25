@@ -1,6 +1,4 @@
-import Game from '../game';
-
-Crafty.c('Smell', {
+Crafty.c('FoodSmell', {
   required: '2D, Canvas, Grid, Color, TeamAssignment',
 
   init() {
@@ -8,12 +6,14 @@ Crafty.c('Smell', {
   },
 
   events: {
-    UpdateFrame() {
+    UpdateFrame(eventData) {
+      const decay = eventData.dt * 0.0001;
+
       if (this.strength < 0.01) {
         this.destroy();
       }
 
-      this.strength -= 0.0025;
+      this.strength -= decay;
       this.color(this.color(), this.strength);
     },
   },
