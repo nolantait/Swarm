@@ -35,14 +35,17 @@ Crafty.scene('main', () => {
 
   Crafty.e('Food')
     .at(25, 17)
+    .with(50)
     .color('red');
 
   Crafty.e('Food')
     .at(30, 23)
+    .with(50)
     .color('red');
 
 
   Crafty.e('Food')
     .at(20, 25)
+    .with(25)
     .color('red');
 });

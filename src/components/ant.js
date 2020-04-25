@@ -11,6 +11,7 @@ Crafty.c('Ant', {
     this.lastSmell = this.pos();
     this.smellTimer = 0;
     this.currentHive = undefined;
+    this.currentFood = undefined;
     const self = this;
     this.state = new StateMachine({
       init: 'gathering',
@@ -58,6 +59,7 @@ Crafty.c('Ant', {
       return false;
     }
 
+    this.currentFood = filteredResults[0];
     return true;
   },
   standingOnHive() {
@@ -81,6 +83,7 @@ Crafty.c('Ant', {
         if (!this.hasFood()) {
           if (this.state.is('gathering')) {
             this.food += 1
+            this.currentFood.food = this.currentFood.food - 1;
             this.state.deposit();
             console.log('DEPOSITING');
           }

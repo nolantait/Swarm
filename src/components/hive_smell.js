@@ -7,7 +7,7 @@ Crafty.c('HiveSmell', {
 
   events: {
     UpdateFrame(eventData) {
-      const decay = eventData.dt * 0.00001;
+      const decay = eventData.dt * 0.0001;
 
       if (this.strength < 0.01) {
         this.destroy();
