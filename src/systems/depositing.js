@@ -1,36 +1,62 @@
 import Game from '../game';
-import { orientTo } from '../utility';
+import probability from '../utility';
 
 Crafty.s('Depositing', {
   events: {
     UpdateFrame() {
       Crafty('Depositing').each(function(index) {
-        const results = [];
-        Crafty.map.search(this.perceptionSpace(), results);
-        const filteredGoalResults = results.filter((entity) => entity.has('Hive'));
+        if (probability(0.75)) {
+          const results = [];
+          Crafty.map.search(this.perceptionSpace(), results);
+          const filteredGoalResults = results.filter((entity) => entity.has('Hive'));
 
-        const IgnoreRange = new Crafty.circle(this.x, this.y, 35);
-        const filteredSmellResults = results.filter((entity) => {
-          const excluded = IgnoreRange.containsPoint(entity.x, entity.y);
-          if (entity.has('HiveSmell') && !excluded) {
-            return true;
-          }
-          return false;
-        });
+          const IgnoreRange = new Crafty.circle(this.x, this.y, 32);
+          const AvoidRange = new Crafty.circle(this.x, this.y, 64);
 
-        if (filteredGoalResults.length > 0) {
-          orientTo(this, filteredGoalResults[0], this._speed);
-        } else if (filteredSmellResults.length > 0) {
-          const sortedResults = filteredSmellResults.sort((a, b) => b.strength - a.strength);
-          orientTo(this, sortedResults[0], this._speed);
-        } else {
-          const xdiff = Crafty.math.negate(0.5) * Game.tile.width;
-          const ydiff = Crafty.math.negate(0.5) * Game.tile.height;
-          const posDiff = {
+          const otherAnts = results.filter((entity) => {
+            const included = AvoidRange.containsPoint(entity.x, entity.y);
+            if (entity.has('Ant') && included) {
+              return true;
+            }
+            return false;
+          });
+
+          const filteredSmellResults = results.filter((entity) => {
+            const excluded = IgnoreRange.containsPoint(entity.x, entity.y);
+            if (entity.has('HiveSmell') && !excluded) {
+              return true;
+            }
+            return false;
+          });
+
+          const xdiff = Crafty.math.negate(0.5) * (Game.tile.width * 2);
+          const ydiff = Crafty.math.negate(0.5) * (Game.tile.height * 2);
+          let target = {
             x: this.x + xdiff,
             y: this.y + ydiff,
           };
-          orientTo(this, posDiff, this._speed);
+
+          if (filteredSmellResults.length > 0) {
+            const sortedResults = filteredSmellResults.sort((a, b) => {
+              return b.strength - a.strength;
+            });
+
+            target = sortedResults[0];
+          }
+
+          if (otherAnts.length > 5) {
+            target = {
+              x: this.x + xdiff,
+              y: this.y + ydiff,
+            };
+          }
+
+
+          if (filteredGoalResults.length > 0) {
+            target = filteredGoalResults[0];
+          }
+
+          this.moveTo(target);
         }
       });
     }

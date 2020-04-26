@@ -7,3 +7,4 @@ import './hive';
 import './hive_smell';
 import './food_smell';
 import './food';
+import './smell';

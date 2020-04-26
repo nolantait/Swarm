@@ -7,9 +7,14 @@ Crafty.c('Hive', {
     }, function(newValue) {
       this._food = newValue;
       if (this._food >= 5) {
-        console.log('MAKE SHIT');
         Crafty.e('Ant, TeamAssignment, Gathering')
-          .attr({ x: this.x, y: this.y, w: 5, h: 5 })
+          .attr({
+            x: this.x,
+            y: this.y,
+            w: 5,
+            h: 5,
+            currentHive: this,
+          })
           .color(this.color());
         this._food = 0;
       }

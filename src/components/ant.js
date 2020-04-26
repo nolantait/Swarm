@@ -6,10 +6,10 @@ Crafty.c('Ant', {
   required: 'Actor, Motion',
   init() {
     this.origin('center');
-    this.smellRange = 48;
+    this.smellRange = Game.tile.width * 5;
     this.food = 0;
     this.lastSmell = this.pos();
-    this.smellTimer = 0;
+    this.smellTimer = 1000;
     this.currentHive = undefined;
     this.currentFood = undefined;
     const self = this;
@@ -32,6 +32,26 @@ Crafty.c('Ant', {
     });
   },
 
+  goalSmellWeight() {
+    if (this.state.is('depositing') && this.currentFood !== undefined) {
+      return Crafty.math.clamp(
+        Crafty.math.distance(this.x, this.y, this.currentFood.x, this.currentFood.y),
+        0.01,
+        100,
+      );
+    }
+
+    if (this.state.is('gathering') && this.currentHive !== undefined) {
+      return Crafty.math.clamp(
+        Crafty.math.distance(this.x, this.y, this.currentHive.x, this.currentHive.y),
+        0.01,
+        100,
+      );
+    }
+
+    return Math.random() * 100;
+  },
+
   perceptionSpace() {
     return {
       _x: this.x - this.smellRange,
@@ -47,6 +67,23 @@ Crafty.c('Ant', {
     }
 
     return 'HiveSmell';
+  },
+
+  moveTo(target) {
+    const initialVector = new Crafty.math.Vector2D(
+      this.x,
+      this.y,
+    );
+    const targetVector = new Crafty.math.Vector2D(
+      target.x,
+      target.y,
+    );
+
+    const subVector = targetVector.subtract(initialVector).scaleToMagnitude(2);
+    const velocity = this.velocity();
+
+    velocity.x = Crafty.math.clamp((velocity.x + subVector.x), -this._speed, this._speed);
+    velocity.y = Crafty.math.clamp((velocity.y + subVector.y), -this._speed, this._speed);
   },
 
   standingOnFood() {
@@ -85,7 +122,6 @@ Crafty.c('Ant', {
             this.food += 1
             this.currentFood.food = this.currentFood.food - 1;
             this.state.deposit();
-            console.log('DEPOSITING');
           }
         }
       }
@@ -94,10 +130,8 @@ Crafty.c('Ant', {
         if (this.hasFood()) {
           if (this.state.is('depositing')) {
             this.food -= 1;
-            console.log(this.currentHive);
             this.currentHive.food = this.currentHive.food + 1;
             this.state.gather();
-            console.log('GATHERING');
           }
         }
       }
