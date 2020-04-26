@@ -8,54 +8,87 @@ Crafty.s('Gathering', {
         if (probability(0.25)) {
           const results = [];
           Crafty.map.search(this.perceptionSpace(), results);
-          const filteredGoalResults = results.filter((entity) => entity.has('Food'));
+          if (results.length > 0) {
+            const filteredGoalResults = results.filter((entity) => entity.has('Food'));
 
-          const IgnoreRange = new Crafty.circle(this.x, this.y, 32);
-          const AvoidRange = new Crafty.circle(this.x, this.y, 64);
+            const IgnoreRange = new Crafty.circle(this.x, this.y, 32);
+            const AvoidRange = new Crafty.circle(this.x, this.y, 64);
 
-          const otherAnts = results.filter((entity) => {
-            const included = AvoidRange.containsPoint(entity.x, entity.y);
-            if (entity.has('Ant') && included) {
-              return true;
-            }
-            return false;
-          });
-
-          const filteredSmellResults = results.filter((entity) => {
-            const excluded = IgnoreRange.containsPoint(entity.x, entity.y);
-            if (entity.has('FoodSmell') && !excluded) {
-              return true;
-            }
-            return false;
-          });
-
-          const xdiff = Crafty.math.negate(0.5) * (Game.tile.width * 2);
-          const ydiff = Crafty.math.negate(0.5) * (Game.tile.height * 2);
-          let target = {
-            x: this.x + xdiff,
-            y: this.y + ydiff,
-          };
-
-          if (filteredSmellResults.length > 0) {
-            const sortedResults = filteredSmellResults.sort((a, b) => {
-              return b.strength - a.strength;
+            const self = this;
+            const sameTeam = results.filter((entity) => {
+              if (entity.teamId === self.teamId) {
+                return true;
+              }
+              return false;
             });
 
-            target = sortedResults[0];
-          }
+            const otherTeam = results.filter((entity) => {
+              if (entity.teamId !== self.teamId) {
+                return true;
+              }
+              return false;
+            });
 
-          if (otherAnts.length > 3) {
-            target = {
+            const otherAnts = sameTeam.filter((entity) => {
+              const included = AvoidRange.containsPoint(entity.x, entity.y);
+              if (entity.has('Ant') && included) {
+                return true;
+              }
+              return false;
+            });
+
+            const filteredSmellResults = results.filter((entity) => {
+              const excluded = IgnoreRange.containsPoint(entity.x, entity.y);
+              if (entity.has('FoodSmell') && !excluded) {
+                return true;
+              }
+              return false;
+            });
+
+            const xdiff = Crafty.math.negate(0.5) * (Game.tile.width * 2);
+            const ydiff = Crafty.math.negate(0.5) * (Game.tile.height * 2);
+            let target = {
               x: this.x + xdiff,
               y: this.y + ydiff,
             };
-          }
 
-          if (filteredGoalResults.length > 0) {
-            target = filteredGoalResults[0];
-          }
+            const maxDistance = 75;
+            const distance = Crafty.math.distance(
+              this.x,
+              this.y,
+              this.currentHive.x,
+              this.currentHive.y,
+            );
 
-          this.moveTo(target);
+            if (distance >= maxDistance) {
+              target = this.currentHive;
+            }
+
+            if (filteredSmellResults.length > 0) {
+              const sortedResults = filteredSmellResults.sort((a, b) => {
+                return b.strength - a.strength;
+              });
+
+              target = sortedResults[0];
+            }
+
+            if (otherAnts.length > 2) {
+              target = {
+                x: this.x + xdiff,
+                y: this.y + ydiff,
+              };
+            }
+
+            if (filteredGoalResults.length > 0) {
+              target = Crafty.math.randomElementOfArray(filteredGoalResults);
+            }
+
+            if (otherTeam.length > 0) {
+              target = Crafty.math.randomElementOfArray(otherTeam);
+            }
+
+            this.moveTo(target);
+          }
         }
       });
     }

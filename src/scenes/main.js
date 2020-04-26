@@ -6,47 +6,49 @@ Crafty.scene('main', () => {
   Crafty.s('Gathering');
   Crafty.s('Smell');
 
-  const centerX = Game.map.width / 2;
-  const centerY = Game.map.height / 2;
-
-  const team = Crafty.e('Team');
-  Crafty.e('Hive, TeamAssignment')
+  const teamA = Crafty.e('Team');
+  const teamB = Crafty.e('Team');
+  const teamAHive = Crafty.e('Hive, TeamAssignment')
     .attr({ w: 10, h: 10 })
-    .at(centerX, centerY)
-    .assign(team)
-    .color(team.color);
-
-  Crafty.e('Ant, TeamAssignment, Gathering')
-    .attr({ w: 5, h: 5 })
-    .at(centerX, centerY)
-    .assign(team)
-    .color(team.color);
-  Crafty.e('Ant, TeamAssignment, Gathering')
-    .attr({ w: 5, h: 5 })
-    .at(centerX, centerY)
-    .assign(team)
-    .color(team.color);
-  Crafty.e('Ant, TeamAssignment, Gathering')
-    .attr({ w: 5, h: 5 })
-    .at(centerX, centerY)
-    .assign(team)
-    .color(team.color);
-  Crafty.e('Ant, TeamAssignment, Gathering')
-    .attr({ w: 5, h: 5 })
-    .at(centerX, centerY)
-    .assign(team)
-    .color(team.color);
-  Crafty.e('Ant, TeamAssignment, Gathering')
-    .attr({ w: 5, h: 5 })
-    .at(centerX, centerY)
-    .assign(team)
-    .color(team.color);
+    .at(30, 30)
+    .assign(teamA)
+    .color(teamA.color);
+  const teamBHive = Crafty.e('Hive, TeamAssignment')
+    .attr({ w: 10, h: 10 })
+    .at(20, 20)
+    .assign(teamB)
+    .color(teamB.color);
 
 
-  for (let i = 0; i < 25; i += 1) {
+  for (let i = 0; i < 5; i += 1) {
+    Crafty.e('Ant, TeamAssignment, Gathering')
+      .checkHits('Ant')
+      .attr({
+        w: 5,
+        h: 5,
+        currentHive: teamAHive,
+        x: teamAHive.x,
+        y: teamAHive.y,
+      })
+      .assign(teamA)
+      .color(teamA.color);
+    Crafty.e('Ant, TeamAssignment, Gathering')
+      .checkHits('Ant')
+      .attr({
+        w: 5,
+        h: 5,
+        currentHive: teamBHive,
+        x: teamBHive.x,
+        y: teamBHive.y,
+      })
+      .assign(teamB)
+      .color(teamB.color);
+  }
+
+  for (let i = 0; i < 50; i += 1) {
     Crafty.e('Food')
       .at(Crafty.math.randomInt(10, Game.map.width), Crafty.math.randomInt(10, Game.map.height))
-      .with(Crafty.math.randomInt(10, 40))
+      .with(Crafty.math.randomInt(10, 30))
       .color('red');
   }
 });
