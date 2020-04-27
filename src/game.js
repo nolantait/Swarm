@@ -1,6 +1,6 @@
 const Game = {
   map: {
-    width: 100,
+    width: 50,
     height: 50,
   },
   tile: {

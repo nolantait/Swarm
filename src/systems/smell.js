@@ -15,10 +15,21 @@ Crafty.s('Smell', {
             .color(this.color())
             .withStrength(goalStrength * 100);
 
-          this.smellTimer = Crafty.math.randomInt(2000, 5000);
+          this.smellTimer = Crafty.math.randomInt(5000, 15000);
         }
 
         this.smellTimer -= eventData.dt;
+      });
+
+      Crafty('Smell').each(function(index) {
+        const decay = eventData.dt * this.baseDecayRate;
+
+        if (this.currentStrength < 0) {
+          this.destroy();
+        }
+
+        this.currentStrength -= decay;
+        this.color(this.color(), this.currentStrength);
       });
     },
   }

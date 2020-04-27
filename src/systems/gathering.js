@@ -5,52 +5,27 @@ Crafty.s('Gathering', {
   events: {
     UpdateFrame() {
       Crafty('Gathering').each(function(index) {
-        if (probability(0.25)) {
+        this.target = this.randomTarget();
+
+        if (probability(0.1)) {
+          const self = this;
           const results = [];
           Crafty.map.search(this.perceptionSpace(), results);
+
           if (results.length > 0) {
-            const filteredGoalResults = results.filter((entity) => entity.has('Food'));
-
-            const IgnoreRange = new Crafty.circle(this.x, this.y, 32);
-            const AvoidRange = new Crafty.circle(this.x, this.y, 64);
-
-            const self = this;
-            const sameTeam = results.filter((entity) => {
-              if (entity.teamId === self.teamId) {
+            const food = results.filter((entity) => entity.has('Food'));
+            const ants = results.filter((entity) => entity.has('Ant'));
+            const sameTeam = ants.filter((entity) => entity.isTeam(self.teamId));
+            const avoid = sameTeam.filter((entity) => {
+              if (self.avoidRange().containsPoint(entity.x, entity.y)) {
                 return true;
               }
               return false;
             });
-
-            const otherTeam = results.filter((entity) => {
-              if (entity.teamId !== self.teamId) {
-                return true;
-              }
-              return false;
+            const smells = results.filter((entity) => entity.has('FoodSmell'));
+            const filteredSmells = smells.filter((entity) => {
+              return self.ignoreRange().containsPoint(entity.x, entity.y);
             });
-
-            const otherAnts = sameTeam.filter((entity) => {
-              const included = AvoidRange.containsPoint(entity.x, entity.y);
-              if (entity.has('Ant') && included) {
-                return true;
-              }
-              return false;
-            });
-
-            const filteredSmellResults = results.filter((entity) => {
-              const excluded = IgnoreRange.containsPoint(entity.x, entity.y);
-              if (entity.has('FoodSmell') && !excluded) {
-                return true;
-              }
-              return false;
-            });
-
-            const xdiff = Crafty.math.negate(0.5) * (Game.tile.width * 2);
-            const ydiff = Crafty.math.negate(0.5) * (Game.tile.height * 2);
-            let target = {
-              x: this.x + xdiff,
-              y: this.y + ydiff,
-            };
 
             const maxDistance = 75;
             const distance = Crafty.math.distance(
@@ -61,33 +36,24 @@ Crafty.s('Gathering', {
             );
 
             if (distance >= maxDistance) {
-              target = this.currentHive;
+              this.target = this.currentHive;
             }
 
-            if (filteredSmellResults.length > 0) {
-              const sortedResults = filteredSmellResults.sort((a, b) => {
+            if (filteredSmells.length > 0) {
+              const sortedResults = filteredSmells.sort((a, b) => {
                 return b.strength - a.strength;
               });
 
-              target = sortedResults[0];
+              this.target = sortedResults[0];
             }
 
-            if (otherAnts.length > 2) {
-              target = {
-                x: this.x + xdiff,
-                y: this.y + ydiff,
-              };
+            if (avoid.length > 2) {
+              this.target = this.randomTarget();
             }
 
-            if (filteredGoalResults.length > 0) {
-              target = Crafty.math.randomElementOfArray(filteredGoalResults);
+            if (food.length > 0) {
+              this.target = Crafty.math.randomElementOfArray(food);
             }
-
-            if (otherTeam.length > 0) {
-              target = Crafty.math.randomElementOfArray(otherTeam);
-            }
-
-            this.moveTo(target);
           }
         }
       });

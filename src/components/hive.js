@@ -14,8 +14,9 @@ Crafty.c('Hive', {
             w: 5,
             h: 5,
             currentHive: this,
+            teamId: this.teamId,
           })
-          .color(this.color());
+          .color(this.color())
         this._food = 0;
       }
     });

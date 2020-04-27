@@ -1,9 +1,7 @@
 // Import our modules.
 import './components';
 import './scenes';
-import './systems/gathering';
-import './systems/depositing';
-import './systems/smell';
+import './systems';
 import Game from './game';
 
 // Initialise our application.
